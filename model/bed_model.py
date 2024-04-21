@@ -3,7 +3,7 @@ from OpenGL.GL import *
 import ctypes
 from meshes.bed import Bed
 
-class Model:
+class BedModel:
     def __init__(self):
         self.get_bed_model()
         self.VBO = glGenBuffers(1)

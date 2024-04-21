@@ -4,7 +4,7 @@ import numpy as np
 from window import Window
 from shader import Shader
 from model.lamp_model import LampModel
-# from model import Model
+# from model.bed_model import BedModel
 
 vertex_source = """
 # version 330
@@ -44,7 +44,7 @@ window.set_resize_callback(window_resize)
 shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
-# model = Model()
+# bed_model = BedModel()
 lamp_model = LampModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
