@@ -3,7 +3,8 @@ from OpenGL.GL import *
 import numpy as np
 from window import Window
 from shader import Shader
-from model import Model
+from model.lamp_model import LampModel
+# from model import Model
 
 vertex_source = """
 # version 330
@@ -43,13 +44,14 @@ window.set_resize_callback(window_resize)
 shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
-model = Model()
+# model = Model()
+lamp_model = LampModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
 
 rotation_loc = glGetUniformLocation(shader_program.program, "rotation")
-scale_factor = 1.2
+scale_factor = 0.5
 scale_matrix = np.array([
     [scale_factor, 0.0, 0.0, 0.0],
     [0.0, scale_factor, 0.0, 0.0],
@@ -83,5 +85,6 @@ while not window.should_close():
 
     glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
 
-    model.draw()
+    # model.draw()
+    lamp_model.draw()
     window.swap_buffers()
