@@ -3,8 +3,9 @@ from OpenGL.GL import *
 import numpy as np
 from window import Window
 from shader import Shader
-from model.lamp_model import LampModel
+# from model.lamp_model import LampModel
 # from model.bed_model import BedModel
+from model.nakas_model import NakasModel
 
 vertex_source = """
 # version 330
@@ -45,7 +46,8 @@ shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
 # bed_model = BedModel()
-lamp_model = LampModel()
+# lamp_model = LampModel()
+nakas_model = NakasModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
@@ -86,5 +88,6 @@ while not window.should_close():
     glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
 
     # model.draw()
-    lamp_model.draw()
+    # lamp_model.draw()
+    nakas_model.draw()
     window.swap_buffers()
