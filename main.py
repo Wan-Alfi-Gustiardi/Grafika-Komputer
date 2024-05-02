@@ -4,23 +4,27 @@ import numpy as np
 from window import Window
 from shader import Shader
 # from model.lamp_model import LampModel
-# from model.bed_model import BedModel
-from model.nakas_model import NakasModel
+from model.bed_model import BedModel
+# from model.nakas_model import NakasModel
+# from model.cupboard_model import CupboardModel
 
 vertex_source = """
 # version 330
 
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_color;
+layout(location = 2) in vec2 a_texture;  
 
 uniform mat4 rotation;
 
 out vec3 v_color;
+out vec2 v_texture;  
 
 void main()
 {
     gl_Position = rotation * vec4(a_position, 1.0);
     v_color = a_color;
+    v_texture = a_texture; 
 }
 """
 
@@ -28,11 +32,15 @@ fragment_source = """
 # version 330
 
 in vec3 v_color;
+in vec2 v_texture;  
+
 out vec4 out_color;
+
+uniform sampler2D s_texture;  
 
 void main()
 {
-    out_color = vec4(v_color, 1.0);
+    out_color = texture(s_texture, v_texture); 
 }
 """
 
@@ -45,9 +53,11 @@ window.set_resize_callback(window_resize)
 shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
-# bed_model = BedModel()
+bed_model = BedModel()
+bed_vertices, bed_indices, texture_coordinates = bed_model.get_bed_model()
 # lamp_model = LampModel()
-nakas_model = NakasModel()
+# nakas_model = NakasModel()
+# cupboard_model = CupboardModel
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
@@ -81,13 +91,20 @@ while not window.should_close():
         [0.0, 0.0, 0.0, 1.0]
     ], dtype=np.float32)
 
+    glActiveTexture(GL_TEXTURE0)
+    glBindTexture(GL_TEXTURE_2D, bed_model.texture)
+
+    rotation_matrix = np.dot(rot_x, rot_y)
+
     rotation_matrix = np.dot(rot_x, rot_y)
 
     transform_matrix = np.dot(rotation_matrix, scale_matrix)
 
     glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
 
-    # model.draw()
+    bed_model.draw()
     # lamp_model.draw()
-    nakas_model.draw()
+    # nakas_model.draw()
+    # cupboard_model.draw()
+
     window.swap_buffers()
