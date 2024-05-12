@@ -1,3 +1,6 @@
+import os
+os.environ['SDL_VIDEO_WINDOW_POS'] = '400, 200'
+
 import glfw
 from OpenGL.GL import *
 import numpy as np
@@ -7,6 +10,9 @@ from shader import Shader
 from model.bed_model import BedModel
 # from model.nakas_model import NakasModel
 # from model.cupboard_model import CupboardModel
+import pygame
+import numpy as np
+import pyrr
 
 vertex_source = """
 # version 330

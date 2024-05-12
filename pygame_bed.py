@@ -1,8 +1,49 @@
-import numpy as np
+import os 
+os.environ['SDL_VIDEO_WINDOW_POS'] = '400, 200'
 
-class Bed:
-    def get_frame_data():
-        frame_vertices = [
+from OpenGL.GL import *
+from OpenGL.GL.shaders import compileProgram, compileShader
+import pygame
+import numpy as np
+import pyrr
+
+vertex_source = """
+# version 330
+
+layout(location = 0) in vec3 a_position;
+layout(location = 1) in vec3 a_color;
+layout(location = 2) in vec2 a_texture;  
+
+uniform mat4 rotation;
+
+out vec3 v_color;
+out vec2 v_texture;  
+
+void main()
+{
+    gl_Position = rotation * vec4(a_position, 1.0);
+    v_color = a_color;
+    v_texture = a_texture; 
+}
+"""
+
+fragment_source = """
+# version 330
+
+in vec3 v_color;
+in vec2 v_texture;  
+
+out vec4 out_color;
+
+uniform sampler2D s_texture;  
+
+void main()
+{
+    out_color = texture(s_texture, v_texture); 
+}
+"""
+
+frame_vertices = [
             0.691075, -0.063902, -0.399850, 0.096831, 0.080843, 0.055785,
             0.691075, -0.193835, -0.399850, 0.096831, 0.080843, 0.055785,
             0.691075, -0.063902, 0.399850, 0.096831, 0.080843, 0.055785,
@@ -18,10 +59,9 @@ class Bed:
             -0.308550, 0.168436, 0.399850, 0.096831, 0.080843, 0.055785,
             -0.308550, 0.168436, -0.399850, 0.096831, 0.080843, 0.055785,
             -0.351616, 0.168436, 0.399850, 0.096831, 0.080843, 0.055785,
-            -0.351616, 0.168436, -0.399850, 0.096831, 0.080843, 0.055785,
-        ]
+            -0.351616, 0.168436, -0.399850, 0.096831, 0.080843, 0.055785]
 
-        frame_indices = [
+frame_indices = [
             4, 2, 0,
             2, 7, 3,
             4, 12, 6,
@@ -49,17 +89,12 @@ class Bed:
             13, 15, 14,
             11, 15, 13,
             6, 12, 14,
-            10, 14, 15,
-        ]
+            10, 14, 15]
 
-        return np.array(frame_vertices, dtype=np.float32), np.array(frame_indices, dtype=np.uint32)
-        pygame.init()
-        pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
+frame_vertices = np.array(frame_vertices, dtype=np.float32) 
+frame_indices = np.array(frame_indices, dtype=np.uint32)
 
-        shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
-    
-    def get_mattress_data():
-        mattress_vertices = [
+mattress_vertices = [
             0.677747, 0.011726, -0.383856, 0.753938, 0.75468, 0.800915,
             0.677747, -0.063902, -0.383856, 0.753938, 0.75468, 0.800915,
             0.677747, 0.011726, 0.383856, 0.753938, 0.75468, 0.800915,
@@ -70,7 +105,7 @@ class Bed:
             -0.308550, -0.063902, 0.383856, 0.753938, 0.75468, 0.800915,
         ]
 
-        mattress_indices = [
+mattress_indices = [
             4, 2, 0,
             2, 7, 3,
             1, 7, 5,
@@ -83,14 +118,10 @@ class Bed:
             4, 0, 1,
         ]
 
-        return np.array(mattress_vertices, dtype=np.float32), np.array(mattress_indices, dtype=np.uint32)
-        pygame.init()
-        pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
+mattress_vertices = np.array(mattress_vertices, dtype=np.float32)
+mattress_indices = np.array(mattress_indices, dtype=np.uint32)
 
-        shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
-    
-    def get_first_pillow_data():
-        first_pillow_vertices = [
+first_pillow_vertices = [
             -0.212277, 0.011726, 0.087138, 0.718012, 0.237273, 0.075974,
             -0.212277, 0.026208, 0.063049, 0.718012, 0.237273, 0.075974,
             -0.120251, 0.026208, 0.087138, 0.718012, 0.237273, 0.075974,
@@ -117,7 +148,7 @@ class Bed:
             -0.212277, 0.062940, 0.087138, 0.718012, 0.237273, 0.075974,
         ]
 
-        first_pillow_indices = [
+first_pillow_indices = [
             4, 14, 0,
             17, 12, 18,
             21, 3, 1,
@@ -164,14 +195,10 @@ class Bed:
             6, 15, 20,
         ]
 
-        return np.array(first_pillow_vertices, dtype=np.float32), np.array(first_pillow_indices, dtype=np.uint32)
-        pygame.init()
-        pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
+first_pillow_vertices = np.array(first_pillow_vertices, dtype=np.float32)
+first_pillow_indices = np.array(first_pillow_indices, dtype=np.uint32)
 
-        shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
-    
-    def get_second_pillow_data():
-        second_pillow_vertices = [
+second_pillow_vertices = [
             -0.212277, 0.011726, -0.287950, 0.718012, 0.237273, 0.075974,
             -0.212277, 0.026208, -0.312039, 0.718012, 0.237273, 0.075974,
             -0.120251, 0.026208, -0.287950, 0.718012, 0.237273, 0.075974,
@@ -198,7 +225,7 @@ class Bed:
             -0.212277, 0.062940, -0.287950, 0.718012, 0.237273, 0.075974,
         ]
 
-        second_pillow_indices = [
+second_pillow_indices = [
             4, 14, 0,
             17, 12, 18,
             21, 3, 1,
@@ -245,14 +272,10 @@ class Bed:
             6, 15, 20,
         ]
 
-        return np.array(second_pillow_vertices, dtype=np.float32), np.array(second_pillow_indices, dtype=np.uint32)
-        pygame.init()
-        pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
+second_pillow_vertices = np.array(second_pillow_vertices, dtype=np.float32)
+second_pillow_indices = np.array(second_pillow_indices, dtype=np.uint32)
 
-        shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
-
-    def get_blanket_data():
-        blanket_vertices = [
+blanket_vertices = [
             0.677747, 0.011726, -0.383856, 0.177704, 0.747082, 0.800828,
             0.677747, 0.011726, 0.383856, 0.177704, 0.747082, 0.800828,
             0.677747, -0.034135, 0.383856, 0.177704, 0.747082, 0.800828,
@@ -301,7 +324,7 @@ class Bed:
             -0.043671, 0.011726, 0.395852, 0.177704, 0.747082, 0.800828,
         ]
 
-        blanket_indices = [
+blanket_indices = [
             2, 31, 27,
             0, 6, 1,
             1, 18, 19,
@@ -358,14 +381,10 @@ class Bed:
             11, 45, 44,
         ]
 
-        return np.array(blanket_vertices, dtype=np.float32), np.array(blanket_indices, dtype=np.uint32)
-        pygame.init()
-        pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
+blanket_vertices = np.array(blanket_vertices, dtype=np.float32)
+blanket_indices = np.array(blanket_indices, dtype=np.uint32)
 
-        shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
-
-    def get_back_side_blanket_data():
-        back_side_blanket_vertices = [
+back_side_blanket_vertices = [
             -0.043671, 0.011726, -0.383856, 0.718012, 0.237273, 0.075974,
             -0.043671, 0.011726, 0.383856, 0.718012, 0.237273, 0.075974,
             -0.043671, -0.034135, 0.383856, 0.718012, 0.237273, 0.075974,
@@ -412,7 +431,7 @@ class Bed:
             0.110008, 0.011726, 0.395852, 0.718012, 0.237273, 0.075974,
         ]
 
-        back_side_blanket_indices = [
+back_side_blanket_indices = [
             1, 5, 0,
             1, 6, 11,
             15, 24, 14,
@@ -469,8 +488,75 @@ class Bed:
             20, 11, 41,
         ]
 
-        return np.array(back_side_blanket_vertices, dtype=np.float32), np.array(back_side_blanket_indices, dtype=np.uint32)
-        pygame.init()
-        pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
+back_side_blanket_vertices = np.array(back_side_blanket_vertices, dtype=np.float32)
+back_side_blanket_indices = np.array(back_side_blanket_indices, dtype=np.uint32)
+        
+pygame.init()
+pygame.display.set_mode((1280, 720), pygame.OPENGL|pygame.DOUBLEBUF|pygame.RESIZABLE)
 
-        shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
+shader = compileProgram(compileShader(vertex_source, GL_VERTEX_SHADER), compileShader(fragment_source, GL_FRAGMENT_SHADER))
+        
+VBO = glGenBuffers(1)
+glBindBuffer(GL_ARRAY_BUFFER, VBO)
+glBufferData(GL_ARRAY_BUFFER, frame_vertices.nbytes, frame_vertices, GL_STATIC_DRAW)
+
+EBO = glGenBuffers(1)
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, frame_indices.nbytes, frame_indices, GL_STATIC_DRAW)
+
+glEnableVertexAttribArray(0)
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, frame_vertices.itemsize * 8, ctypes.c_void_p(0))
+
+glEnableVertexAttribArray(1)
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, frame_vertices.itemsize * 8, ctypes.c_void_p(12))
+
+glEnableVertexAttribArray(2)
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, frame_vertices.itemsize * 8, ctypes.c_void_p(20))
+
+texture = glGenTextures(1)
+glBindTexture(GL_TEXTURE_2D, texture)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+image = pygame.image.load("textures/CRATE.jpeg")
+image = pygame.transform.flip(image, False, True)
+image_width, image_height = image.get_rect().size
+img_data = pygame.image.tostring(image, "RGBA")
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data)
+
+glUseProgram(shader)
+glClearColor(0, 0.1, 0.1, 1)
+glEnable(GL_DEPTH_TEST)
+glEnable(GL_BLEND)
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+rotation_loc = glGetUniformLocation(shader, "rotation")
+
+running = True
+
+# 10. Loop utama dan penanganan peristiwa
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.VIDEORESIZE:
+            glViewport(0, 0, event.w, event.h)
+
+    ct = pygame.time.get_ticks() / 1000
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    rot_x = pyrr.Matrix44.from_x_rotation(0.5 * ct)
+    rot_y = pyrr.Matrix44.from_y_rotation(0.8 * ct)
+
+    # glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, rot_x * rot_y)
+    # glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, rot_x @ rot_y)
+    glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, pyrr.matrix44.multiply(rot_x, rot_y))
+
+    glDrawElements(GL_TRIANGLES, len(frame_indices), GL_UNSIGNED_INT, None)
+
+    pygame.display.flip()
+
+pygame.quit() # menutup jendela
