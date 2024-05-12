@@ -6,10 +6,10 @@ from OpenGL.GL import *
 import numpy as np
 from window import Window
 from shader import Shader
-# from model.lamp_model import LampModel
+from model.lamp_model import LampModel
 from model.bed_model import BedModel
-# from model.nakas_model import NakasModel
-# from model.cupboard_model import CupboardModel
+from model.nakas_model import NakasModel
+from model.cupboard_model import CupboardModel
 import pygame
 import numpy as np
 import pyrr
@@ -59,17 +59,17 @@ window.set_resize_callback(window_resize)
 shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
-bed_model = BedModel()
-bed_vertices, bed_indices, texture_coordinates = bed_model.get_bed_model()
+# bed_model = BedModel()
+# bed_vertices, bed_indices, texture_coordinates = bed_model.get_bed_model()
 # lamp_model = LampModel()
 # nakas_model = NakasModel()
-# cupboard_model = CupboardModel
+cupboard_model = CupboardModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
 
 rotation_loc = glGetUniformLocation(shader_program.program, "rotation")
-scale_factor = 0.5
+scale_factor = 2
 scale_matrix = np.array([
     [scale_factor, 0.0, 0.0, 0.0],
     [0.0, scale_factor, 0.0, 0.0],
@@ -97,8 +97,8 @@ while not window.should_close():
         [0.0, 0.0, 0.0, 1.0]
     ], dtype=np.float32)
 
-    glActiveTexture(GL_TEXTURE0)
-    glBindTexture(GL_TEXTURE_2D, bed_model.texture)
+    # glActiveTexture(GL_TEXTURE0)
+    # glBindTexture(GL_TEXTURE_2D, bed_model.texture)
 
     rotation_matrix = np.dot(rot_x, rot_y)
 
@@ -108,9 +108,9 @@ while not window.should_close():
 
     glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
 
-    bed_model.draw()
+    # bed_model.draw()
     # lamp_model.draw()
     # nakas_model.draw()
-    # cupboard_model.draw()
+    cupboard_model.draw()
 
     window.swap_buffers()
