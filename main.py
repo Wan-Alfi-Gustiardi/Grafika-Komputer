@@ -62,8 +62,8 @@ shader_program.use()
 # bed_model = BedModel()
 # bed_vertices, bed_indices, texture_coordinates = bed_model.get_bed_model()
 # lamp_model = LampModel()
-# nakas_model = NakasModel()
-cupboard_model = CupboardModel()
+nakas_model = NakasModel()
+#cupboard_model = CupboardModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
@@ -110,7 +110,7 @@ while not window.should_close():
 
     # bed_model.draw()
     # lamp_model.draw()
-    # nakas_model.draw()
-    cupboard_model.draw()
+    nakas_model.draw()
+    # cupboard_model.draw()
 
     window.swap_buffers()
