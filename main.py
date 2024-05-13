@@ -60,16 +60,15 @@ shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
 # bed_model = BedModel()
-# bed_vertices, bed_indices, texture_coordinates = bed_model.get_bed_model()
-# lamp_model = LampModel()
-nakas_model = NakasModel()
-#cupboard_model = CupboardModel()
+lamp_model = LampModel()
+# nakas_model = NakasModel()
+# cupboard_model = CupboardModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
 
 rotation_loc = glGetUniformLocation(shader_program.program, "rotation")
-scale_factor = 2
+scale_factor = 0.5
 scale_matrix = np.array([
     [scale_factor, 0.0, 0.0, 0.0],
     [0.0, scale_factor, 0.0, 0.0],
@@ -98,9 +97,6 @@ while not window.should_close():
     ], dtype=np.float32)
 
     # glActiveTexture(GL_TEXTURE0)
-    # glBindTexture(GL_TEXTURE_2D, bed_model.texture)
-
-    rotation_matrix = np.dot(rot_x, rot_y)
 
     rotation_matrix = np.dot(rot_x, rot_y)
 
@@ -109,8 +105,8 @@ while not window.should_close():
     glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
 
     # bed_model.draw()
-    # lamp_model.draw()
-    nakas_model.draw()
+    lamp_model.draw()
+    # nakas_model.draw()
     # cupboard_model.draw()
 
     window.swap_buffers()
