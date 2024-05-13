@@ -46,7 +46,9 @@ uniform sampler2D s_texture;
 
 void main()
 {
-    out_color = texture(s_texture, v_texture); 
+    vec4 texture_color = texture(s_texture, v_texture);
+    vec4 final_color = vec4(v_color, 1.0) * texture_color;
+    out_color = final_color; 
 }
 """
 
@@ -60,9 +62,9 @@ shader_program = Shader(vertex_source, fragment_source)
 shader_program.use()
 
 # bed_model = BedModel()
-lamp_model = LampModel()
+# lamp_model = LampModel()
 # nakas_model = NakasModel()
-# cupboard_model = CupboardModel()
+cupboard_model = CupboardModel()
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
@@ -105,8 +107,8 @@ while not window.should_close():
     glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
 
     # bed_model.draw()
-    lamp_model.draw()
+    #lamp_model.draw()
     # nakas_model.draw()
-    # cupboard_model.draw()
+    cupboard_model.draw()
 
     window.swap_buffers()
