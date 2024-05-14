@@ -1,54 +1,38 @@
-import os
-os.environ['SDL_VIDEO_WINDOW_POS'] = '400, 200'
-
 import glfw
 from OpenGL.GL import *
-import numpy as np
-from window import Window
-from shader import Shader
-from model.lamp_model import LampModel
-from model.bed_model import BedModel
-from model.nakas_model import NakasModel
-from model.cupboard_model import CupboardModel
-import pygame
-import numpy as np
-import pyrr
+from utils import *
+from meshes import *
 
-vertex_source = """
+vertex_src = """
 # version 330
 
 layout(location = 0) in vec3 a_position;
-layout(location = 1) in vec3 a_color;
-layout(location = 2) in vec2 a_texture;  
+layout(location = 1) in vec2 a_texture;
+layout(location = 2) in vec3 a_normal;
 
-uniform mat4 rotation;
+uniform mat4 model;
 
-out vec3 v_color;
-out vec2 v_texture;  
+out vec2 v_texture;
 
 void main()
 {
-    gl_Position = rotation * vec4(a_position, 1.0);
-    v_color = a_color;
-    v_texture = a_texture; 
+    gl_Position = model * vec4(a_position, 1.0);
+    v_texture = a_texture;
 }
 """
 
-fragment_source = """
+fragment_src = """
 # version 330
 
-in vec3 v_color;
-in vec2 v_texture;  
+in vec2 v_texture;
 
 out vec4 out_color;
 
-uniform sampler2D s_texture;  
+uniform sampler2D s_texture;
 
 void main()
 {
-    vec4 texture_color = texture(s_texture, v_texture);
-    vec4 final_color = vec4(v_color, 1.0) * texture_color;
-    out_color = final_color; 
+    out_color = texture(s_texture, v_texture);
 }
 """
 
@@ -58,57 +42,116 @@ def window_resize(window, width, height):
 window = Window(1280, 720, "3D World")
 window.set_resize_callback(window_resize)
 
-shader_program = Shader(vertex_source, fragment_source)
+shader_program = Shader(vertex_src, fragment_src)
 shader_program.use()
 
-# bed_model = BedModel()
-# lamp_model = LampModel()
-# nakas_model = NakasModel()
-cupboard_model = CupboardModel()
+# Load Bed Textures
+frame_texture_id = glGenTextures(1)
+load_texture("textures/wood.png", frame_texture_id)
+mattress_texture_id = glGenTextures(1)
+load_texture("textures/fabric-base.png", mattress_texture_id)
+first_pillow_texture_id = glGenTextures(1)
+load_texture("textures/fabric-color.png", first_pillow_texture_id)
+second_pillow_texture_id = glGenTextures(1)
+load_texture("textures/fabric-color.png", second_pillow_texture_id)
+blanket_texture_id = glGenTextures(1)
+load_texture("textures/fleece-blue.png", blanket_texture_id)
+back_side_blanket_texture_id = glGenTextures(1)
+load_texture("textures/fleece-orange.png", back_side_blanket_texture_id)
+
+# Load Lamp Textures
+lamp_texture_id = glGenTextures(1)
+load_texture("textures/glass.png", lamp_texture_id)
+base_texture_id = glGenTextures(1)
+load_texture("textures/rustic-wood-black.png", base_texture_id)
+
+# Load Cupboard Textures
+wardrobe_texture_id = glGenTextures(1)
+load_texture("textures/wood-fine.png", wardrobe_texture_id)
+door_texture_id = glGenTextures(1)
+load_texture("textures/wood-fine.png", door_texture_id)
+handle_texture_id = glGenTextures(1)
+load_texture("textures/stainless-steel.png", handle_texture_id)
+
+# Load Bed Model
+frame_model = Model(frame_buffer, frame_indices, frame_texture_id)
+mattress_model = Model(mattress_buffer, mattress_indices, mattress_texture_id)
+first_pillow_model = Model(first_pillow_buffer, first_pillow_indices, first_pillow_texture_id)
+second_pillow_model = Model(second_pillow_buffer, second_pillow_indices, second_pillow_texture_id)
+blanket_model = Model(blanket_buffer, blanket_indices, blanket_texture_id)
+back_side_blanket_model = Model(back_side_blanket_buffer, back_side_blanket_indices, back_side_blanket_texture_id)
+
+# Load Lamp Model
+lamp_model = Model(lamp_buffer, lamp_indices, lamp_texture_id)
+base_model = Model(base_buffer, base_indices, base_texture_id)
+
+# Load Cupboard Model
+wardrobe_model = Model(wardrobe_buffer, wardrobe_indices, wardrobe_texture_id)
+door_model = Model(door_buffer, door_indices, door_texture_id)
+handle_model = Model(handle_buffer, handle_indices, handle_texture_id)
 
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
+glEnable(GL_BLEND)
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-rotation_loc = glGetUniformLocation(shader_program.program, "rotation")
-scale_factor = 0.5
-scale_matrix = np.array([
-    [scale_factor, 0.0, 0.0, 0.0],
-    [0.0, scale_factor, 0.0, 0.0],
-    [0.0, 0.0, scale_factor, 0.0],
-    [0.0, 0.0, 0.0, 1.0]
-], dtype=np.float32)
+# Bed Model Position
+bed_position = Matrix44.translation_matrix(to_list((Vector3([-0.2, 0, 1]))))
 
+# Lamp Model Position
+lamp_position = Matrix44.translation_matrix(to_list((Vector3([0.3, 0.4, 14]))))
+
+# Cupboard Model Position
+cupboard_position = Matrix44.translation_matrix(to_list((Vector3([0.6, 0.3, 0]))))
+
+model_loc = glGetUniformLocation(shader_program.program, "model")
+
+# the main application loop
 while not window.should_close():
     window.poll_events()
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    time = glfw.get_time()
+    rot_y = rotation_matrix_y(0.8 * glfw.get_time())
+    
+    scale_bed = matrix_multiply(bed_position, scale_matrix(1.4))
+    model_bed = matrix_multiply(rot_y, bed_position)
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, scale_bed)
 
-    rot_x = rot_x = np.array([
-        [1.0, 0.0, 0.0, 0.0],
-        [0.0, np.cos(0.5 * time), -np.sin(0.5 * time), 0.0],
-        [0.0, np.sin(0.5 * time), np.cos(0.5 * time), 0.0],
-        [0.0, 0.0, 0.0, 1.0]
-    ], dtype=np.float32)
+    # Draw Bed Model
+    glBindTexture(GL_TEXTURE_2D, frame_texture_id)
+    frame_model.draw()
+    glBindTexture(GL_TEXTURE_2D, mattress_texture_id)
+    mattress_model.draw()
+    glBindTexture(GL_TEXTURE_2D, first_pillow_texture_id)
+    first_pillow_model.draw()
+    glBindTexture(GL_TEXTURE_2D, second_pillow_texture_id)
+    second_pillow_model.draw()
+    glBindTexture(GL_TEXTURE_2D, blanket_texture_id)
+    blanket_model.draw()
+    glBindTexture(GL_TEXTURE_2D, back_side_blanket_texture_id)
+    back_side_blanket_model.draw()
 
-    rot_y = np.array([
-        [np.cos(0.8 * time), 0.0, np.sin(0.8 * time), 0.0],
-        [0.0, 1.0, 0.0, 0.0],
-        [-np.sin(0.8 * time), 0.0, np.cos(0.8 * time), 0.0],
-        [0.0, 0.0, 0.0, 1.0]
-    ], dtype=np.float32)
+    scale_lamp = matrix_multiply(lamp_position, scale_matrix(0.19))
+    model_lamp = matrix_multiply(rot_y, lamp_position)
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, scale_lamp)
 
-    # glActiveTexture(GL_TEXTURE0)
+    # Draw Lamp Model
+    glBindTexture(GL_TEXTURE_2D, lamp_texture_id)
+    lamp_model.draw()
+    glBindTexture(GL_TEXTURE_2D, base_texture_id)
+    base_model.draw()
 
-    rotation_matrix = np.dot(rot_x, rot_y)
+    scale_cupboard = matrix_multiply(cupboard_position, scale_matrix(1.5))
+    model_cupboard = matrix_multiply(rot_y, cupboard_position)
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, scale_cupboard)
 
-    transform_matrix = np.dot(rotation_matrix, scale_matrix)
-
-    glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, transform_matrix)
-
-    # bed_model.draw()
-    #lamp_model.draw()
-    # nakas_model.draw()
-    cupboard_model.draw()
+    # Draw Cupboard Model
+    glBindTexture(GL_TEXTURE_2D, wardrobe_texture_id)
+    wardrobe_model.draw()
+    glBindTexture(GL_TEXTURE_2D, door_texture_id)
+    door_model.draw()
+    glBindTexture(GL_TEXTURE_2D, handle_texture_id)
+    handle_model.draw()
 
     window.swap_buffers()
