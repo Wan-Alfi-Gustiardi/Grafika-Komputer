@@ -11,12 +11,14 @@ layout(location = 1) in vec2 a_texture;
 layout(location = 2) in vec3 a_normal;
 
 uniform mat4 model;
+uniform mat4 projection;
+uniform mat4 view;
 
 out vec2 v_texture;
 
 void main()
 {
-    gl_Position = model * vec4(a_position, 1.0);
+    gl_Position = projection * view * model * vec4(a_position, 1.0);
     v_texture = a_texture;
 }
 """
@@ -38,6 +40,8 @@ void main()
 
 def window_resize(window, width, height):
     glViewport(0, 0, width, height)
+    projection = create_perspective_projection_matrix(45, width / height, 0.1, 100)
+    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, projection)
 
 window = Window(1280, 720, "3D World")
 window.set_resize_callback(window_resize)
@@ -95,6 +99,9 @@ glEnable(GL_DEPTH_TEST)
 glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
+# Perpective Projection
+projection = create_perspective_projection_matrix(45, 1280 / 720, 0.1, 100)
+
 # Bed Model Position
 bed_position = Matrix44.translation_matrix(to_list((Vector3([-0.2, 0, 1]))))
 
@@ -104,7 +111,15 @@ lamp_position = Matrix44.translation_matrix(to_list((Vector3([0.3, 0.4, 14]))))
 # Cupboard Model Position
 cupboard_position = Matrix44.translation_matrix(to_list((Vector3([0.6, 0.3, 0]))))
 
+# eye, target, up
+view = create_look_at([2, 2, 4], [0, 0, 0], [0, 1, 0])
+
 model_loc = glGetUniformLocation(shader_program.program, "model")
+projection_loc = glGetUniformLocation(shader_program.program, "projection")
+view_loc = glGetUniformLocation(shader_program.program, "view")
+
+glUniformMatrix4fv(projection_loc, 1, GL_FALSE, projection)
+glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
 # the main application loop
 while not window.should_close():
