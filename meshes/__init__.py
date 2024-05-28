@@ -11,3 +11,7 @@ from .lamp.base import base_buffer, base_indices
 from .cupboard.wardrobe import wardrobe_buffer, wardrobe_indices
 from .cupboard.door import door_buffer, door_indices
 from .cupboard.handle import handle_buffer, handle_indices
+
+from .nightstand.carcass import carcass_buffer, carcass_indices
+from .nightstand.drawers import drawers_buffer, drawers_indices
+from .nightstand.knobs import knobs_buffer, knobs_indices

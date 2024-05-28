@@ -26,6 +26,15 @@ class Window:
     def set_resize_callback(self, callback):
         glfw.set_window_size_callback(self.window, callback)
 
+    def set_cursor_pos_callback(self, callback):
+        glfw.set_cursor_pos_callback(self.window, callback)
+
+    def set_input_mode(self):
+        glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_DISABLED)
+
+    def set_key_callback(self, callback):
+        glfw.set_key_callback(self.window, callback)
+
     @property
     def width(self):
         return glfw.get_framebuffer_size(self.window)[0]
