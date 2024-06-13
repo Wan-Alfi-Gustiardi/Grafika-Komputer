@@ -66,27 +66,57 @@ uniform mat4 projection;
 uniform mat4 view;
 
 out vec2 v_texture;
+out vec3 v_normal;
+out vec3 v_fragPos;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(a_position, 1.0);
     v_texture = a_texture;
+    v_normal = mat3(transpose(inverse(model))) * a_normal;
+    v_fragPos = vec3(model * vec4(a_position, 1.0));
 }
+
 """
 
 fragment_src = """
 # version 330
 
 in vec2 v_texture;
+in vec3 v_normal;
+in vec3 v_fragPos;
 
 out vec4 out_color;
 
 uniform sampler2D s_texture;
+uniform vec3 lightPos;
+uniform vec3 viewPos;
+uniform vec3 lightColor;
+uniform vec3 objectColor;
 
 void main()
 {
-    out_color = texture(s_texture, v_texture);
+    // Ambient
+    float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength * lightColor;
+    
+    // Diffuse 
+    vec3 norm = normalize(v_normal);
+    vec3 lightDir = normalize(lightPos - v_fragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * lightColor;
+    
+    // Specular
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(viewPos - v_fragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * lightColor;  
+    
+    vec3 result = (ambient + diffuse + specular) * objectColor * texture(s_texture, v_texture).rgb;
+    out_color = vec4(result, 1.0);
 }
+
 """
 
 def window_resize(window, width, height):
@@ -192,6 +222,21 @@ view_loc = glGetUniformLocation(shader_program.program, "view")
 glUniformMatrix4fv(projection_loc, 1, GL_FALSE, projection)
 # glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
+# Light properties
+light_pos = [2.0, 4.0, -1.0]
+light_color = [1.0, 1.0, 1.0]
+object_color = [1.0, 1.0, 1.0]
+
+light_pos_loc = glGetUniformLocation(shader_program.program, "lightPos")
+view_pos_loc = glGetUniformLocation(shader_program.program, "viewPos")
+light_color_loc = glGetUniformLocation(shader_program.program, "lightColor")
+object_color_loc = glGetUniformLocation(shader_program.program, "objectColor")
+
+# Set the light and material properties
+glUniform3fv(light_pos_loc, 1, light_pos)
+glUniform3fv(light_color_loc, 1, light_color)
+glUniform3fv(object_color_loc, 1, object_color)
+
 # the main application loop
 while not window.should_close():
     window.poll_events()
@@ -204,9 +249,11 @@ while not window.should_close():
 
     rot_y = rotation_matrix_y(90 * (math.pi / 180))
 
+    
     scale_bed = matrix_multiply(bed_position, scale_matrix(1.4))
     model_bed = matrix_multiply(rot_y, scale_bed)
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_bed)
+
 
     # Draw Bed Model
     glBindTexture(GL_TEXTURE_2D, frame_texture_id)
