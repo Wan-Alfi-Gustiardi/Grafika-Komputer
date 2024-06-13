@@ -15,3 +15,6 @@ from .cupboard.handle import handle_buffer, handle_indices
 from .nightstand.carcass import carcass_buffer, carcass_indices
 from .nightstand.drawers import drawers_buffer, drawers_indices
 from .nightstand.knobs import knobs_buffer, knobs_indices
+
+from .floor.floor import floor_buffer, floor_indices
+from.floor.wall import wall_buffer, wall_indices

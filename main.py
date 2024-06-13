@@ -170,6 +170,12 @@ load_texture("textures/light-blue-wood.png", drawers_texture_id)
 knobs_texture_id = glGenTextures(1)
 load_texture("textures/stainless-steel.png", knobs_texture_id)
 
+# Load Floor and Wall Textures
+floor_texture_id = glGenTextures(1)
+load_texture('textures/floor.png', floor_texture_id)
+wall_texture_id = glGenTextures(1)
+load_texture('textures/wall.png', wall_texture_id)
+
 # Load Bed Model
 frame_model = Model(frame_buffer, frame_indices, frame_texture_id)
 mattress_model = Model(mattress_buffer, mattress_indices, mattress_texture_id)
@@ -192,6 +198,10 @@ carcass_model = Model(carcass_buffer, carcass_indices, carcass_texture_id)
 drawers_model = Model(drawers_buffer, drawers_indices, drawers_texture_id)
 knobs_model = Model(knobs_buffer, knobs_indices, knobs_texture_id)
 
+# Load Floor and Wall Model
+floor_model = Model(floor_buffer, floor_indices, floor_texture_id)
+wall_model = Model(wall_buffer, wall_indices, wall_texture_id)
+
 glClearColor(0.2, 0.2, 0.2, 1)
 glEnable(GL_DEPTH_TEST)
 glEnable(GL_BLEND)
@@ -201,16 +211,19 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 projection = create_perspective_projection_matrix(45, WIDTH / HEIGHT, 0.1, 100)
 
 # Bed Model Position
-bed_position = Matrix44.translation_matrix(to_list((Vector3([1, 2.5, -1]))))
+bed_position = Matrix44.translation_matrix(to_list((Vector3([0.6, 2.5, -1]))))
 
 # Lamp Model Position
-lamp_position = Matrix44.translation_matrix(to_list((Vector3([5, 30.04, -14.3]))))
+lamp_position = Matrix44.translation_matrix(to_list((Vector3([0, 30.04, -14.3]))))
 
 # Cupboard Model Position
 cupboard_position = Matrix44.translation_matrix(to_list((Vector3([-0.8, 2.687, 0]))))
 
 # Nightstand Model Position
-nightstand_position = Matrix44.translation_matrix(to_list((Vector3([1.5, 8.49, -4.06]))))
+nightstand_position = Matrix44.translation_matrix(to_list((Vector3([0, 8.49, -4.06]))))
+
+# Floor and Wall Model Position
+floor_and_wall_position = Matrix44.translation_matrix(to_list((Vector3([0.05, 1.795, -0.1]))))
 
 # eye, target, up
 # view = create_look_at([2, 2, 4], [0, 0, 0], [0, 1, 0])
@@ -306,5 +319,15 @@ while not window.should_close():
     drawers_model.draw()
     glBindTexture(GL_TEXTURE_2D, knobs_texture_id)
     knobs_model.draw()
+
+    scale_floor_and_wall = matrix_multiply(floor_and_wall_position, scale_matrix(1.8))
+    model_floor_and_wall = matrix_multiply(rot_y, scale_floor_and_wall)
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_floor_and_wall)
+
+    # Draw Floor and Wall Model
+    glBindTexture(GL_TEXTURE_2D, floor_texture_id)
+    floor_model.draw()
+    glBindTexture(GL_TEXTURE_2D, wall_texture_id)
+    wall_model.draw()
 
     window.swap_buffers()
