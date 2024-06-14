@@ -148,12 +148,6 @@ load_texture("textures/fleece-blue.png", blanket_texture_id)
 back_side_blanket_texture_id = glGenTextures(1)
 load_texture("textures/fleece-orange.png", back_side_blanket_texture_id)
 
-# Load Lamp Textures
-lamp_texture_id = glGenTextures(1)
-load_texture("textures/glass.png", lamp_texture_id)
-base_texture_id = glGenTextures(1)
-load_texture("textures/rustic-wood-black.png", base_texture_id)
-
 # Load Cupboard Textures
 wardrobe_texture_id = glGenTextures(1)
 load_texture("textures/wood-fine.png", wardrobe_texture_id)
@@ -184,10 +178,6 @@ second_pillow_model = Model(second_pillow_buffer, second_pillow_indices, second_
 blanket_model = Model(blanket_buffer, blanket_indices, blanket_texture_id)
 back_side_blanket_model = Model(back_side_blanket_buffer, back_side_blanket_indices, back_side_blanket_texture_id)
 
-# Load Lamp Model
-lamp_model = Model(lamp_buffer, lamp_indices, lamp_texture_id)
-base_model = Model(base_buffer, base_indices, base_texture_id)
-
 # Load Cupboard Model
 wardrobe_model = Model(wardrobe_buffer, wardrobe_indices, wardrobe_texture_id)
 door_model = Model(door_buffer, door_indices, door_texture_id)
@@ -213,9 +203,6 @@ projection = create_perspective_projection_matrix(45, WIDTH / HEIGHT, 0.1, 100)
 # Bed Model Position
 bed_position = Matrix44.translation_matrix(to_list((Vector3([0.6, 2.5, -1]))))
 
-# Lamp Model Position
-lamp_position = Matrix44.translation_matrix(to_list((Vector3([0, 30.04, -14.3]))))
-
 # Cupboard Model Position
 cupboard_position = Matrix44.translation_matrix(to_list((Vector3([-0.8, 2.687, 0]))))
 
@@ -236,7 +223,7 @@ glUniformMatrix4fv(projection_loc, 1, GL_FALSE, projection)
 # glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
 # Light properties
-light_pos = [2.0, 4.0, -1.0]
+light_pos = [1.0, 4.0, -1.0]
 light_color = [1.0, 1.0, 1.0]
 object_color = [1.0, 1.0, 1.0]
 
@@ -262,11 +249,9 @@ while not window.should_close():
 
     rot_y = rotation_matrix_y(90 * (math.pi / 180))
 
-    
     scale_bed = matrix_multiply(bed_position, scale_matrix(1.4))
     model_bed = matrix_multiply(rot_y, scale_bed)
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, model_bed)
-
 
     # Draw Bed Model
     glBindTexture(GL_TEXTURE_2D, frame_texture_id)
@@ -281,16 +266,6 @@ while not window.should_close():
     blanket_model.draw()
     glBindTexture(GL_TEXTURE_2D, back_side_blanket_texture_id)
     back_side_blanket_model.draw()
-
-    scale_lamp = matrix_multiply(lamp_position, scale_matrix(0.12))
-    model_lamp = matrix_multiply(rot_y, lamp_position)
-    glUniformMatrix4fv(model_loc, 1, GL_FALSE, scale_lamp)
-
-    # Draw Lamp Model
-    glBindTexture(GL_TEXTURE_2D, lamp_texture_id)
-    lamp_model.draw()
-    glBindTexture(GL_TEXTURE_2D, base_texture_id)
-    base_model.draw()
     
     rot_y = rotation_matrix_y(-90 * (math.pi / 180))
 
